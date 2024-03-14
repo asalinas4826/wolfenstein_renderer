@@ -1,5 +1,5 @@
 # Wolfenstein-style software renderer
-![screenshot](wolfenstein_render.png)
+![screenshot](./wolfenstein_renderer.png)
 written with C and SDL2.
 
 Heavily used https://lodev.org/cgtutor/raycasting.html as a resource.
