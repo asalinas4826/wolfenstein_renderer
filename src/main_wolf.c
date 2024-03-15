@@ -112,39 +112,6 @@ void setTextures() {
 	}
 }
 
-u32 getWallColor(i32 x, i32 y, i8 side) {
-	u32 color = 0xFF000000;
-	switch (world_map[x][y]) {
-		case 1: { // red
-			color += 0x00AA0000;
-			if (side == 1) color -= 0x00550000;
-			break;
-		}
-		case 2: { // green
-			color += 0x0000AA00;	
-			if (side == 1) color -= 0x00005500;
-			break;
-		}
-		case 3: { // blue
-			color += 0x000000AA;
-			if (side == 1) color -= 0x00000055;
-			break;
-		}
-		case 4: { // white
-			color += 0x00AAAAAA;
-			if (side == 1) color -= 0x00555555;
-			break;
-		}
-		default: { // yellow
-			color += 0x00AAAA00;
-			if (side == 1) color -= 0x00555500;
-			break;
-		}
-	}
-
-	return color;
-}
-
 void render() {
 	for (size_t col = 0; col < SCREEN_WIDTH; col++) {
 		f64 camera_x = 2 * ((f64) col) / SCREEN_WIDTH - 1; // x in camera space
