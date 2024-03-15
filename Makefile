@@ -81,7 +81,7 @@ $(OBJ): $(BIN)/%.o: %.c
 # 	$(LD) -o bin/doom $(BIN)/src/main_doom.o $(LDFLAGS)
 
 wolf: dirs $(BIN)/src/main_wolf.o
-	$(LD) -o bin/wolf $(BIN)/src/main_wolf.o $(LDFLAGS)
+	$(LD) -o bin/wolf $(BIN)/src/main_wolf.o $(BIN)/src/dyn_array.o $(LDFLAGS)
 
 # all: dirs doom wolf
 all: dirs wolf

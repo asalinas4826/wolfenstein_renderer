@@ -23,4 +23,4 @@ bin/src/main_wolf.o: src/main_wolf.c lib/SDL/include/SDL.h \
  lib/SDL/include/SDL_power.h lib/SDL/include/SDL_render.h \
  lib/SDL/include/SDL_shape.h lib/SDL/include/SDL_system.h \
  lib/SDL/include/SDL_timer.h lib/SDL/include/SDL_version.h \
- lib/SDL/include/SDL_locale.h lib/SDL/include/SDL_misc.h
+ lib/SDL/include/SDL_locale.h lib/SDL/include/SDL_misc.h src/dyn_array.h

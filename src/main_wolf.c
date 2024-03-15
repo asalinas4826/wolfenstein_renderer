@@ -5,6 +5,8 @@
 #include <math.h>
 #include <SDL.h>
 
+#include "dyn_array.h"
+
 #define ASSERT(_e, ...) if (!(_e)) { fprintf(stderr, __VA_ARGS__); exit(1); }
 #define ABS(x) ((x < 0) ? x * -1 : x)
 
@@ -25,32 +27,35 @@ typedef size_t   usize;
 #define MAP_HEIGHT 24
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
+#define TEXTURE_WIDTH 64
+#define TEXTURE_HEIGHT 64
+#define TEXTURE_COUNT 8
 
-i32 world_map[MAP_WIDTH][MAP_HEIGHT] = {
-  {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,0,0,0,0,0,2,2,2,2,2,0,0,0,0,3,0,3,0,3,0,0,0,1},
-  {1,0,0,0,0,0,2,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,0,0,0,0,0,2,0,0,0,2,0,0,0,0,3,0,0,0,3,0,0,0,1},
-  {1,0,0,0,0,0,2,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,0,0,0,0,0,2,2,0,2,2,0,0,0,0,3,0,3,0,3,0,0,0,1},
-  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,4,4,4,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,4,0,4,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,4,0,0,0,0,5,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,4,0,4,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,4,0,4,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,4,4,4,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
+u32 world_map[MAP_WIDTH][MAP_HEIGHT]= {
+  {4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,7,7,7,7,7,7,7,7},
+  {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,7},
+  {4,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7},
+  {4,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7},
+  {4,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,7},
+  {4,0,4,0,0,0,0,5,5,5,5,5,5,5,5,5,7,7,0,7,7,7,7,7},
+  {4,0,5,0,0,0,0,5,0,5,0,5,0,5,0,5,7,0,0,0,7,7,7,1},
+  {4,0,6,0,0,0,0,5,0,0,0,0,0,0,0,5,7,0,0,0,0,0,0,8},
+  {4,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,7,7,1},
+  {4,0,8,0,0,0,0,5,0,0,0,0,0,0,0,5,7,0,0,0,0,0,0,8},
+  {4,0,0,0,0,0,0,5,0,0,0,0,0,0,0,5,7,0,0,0,7,7,7,1},
+  {4,0,0,0,0,0,0,5,5,5,5,0,5,5,5,5,7,7,7,7,7,7,7,1},
+  {6,6,6,6,6,6,6,6,6,6,6,0,6,6,6,6,6,6,6,6,6,6,6,6},
+  {8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+  {6,6,6,6,6,6,0,6,6,6,6,0,6,6,6,6,6,6,6,6,6,6,6,6},
+  {4,4,4,4,4,4,0,4,4,4,6,0,6,2,2,2,2,2,2,2,3,3,3,3},
+  {4,0,0,0,0,0,0,0,0,4,6,0,6,2,0,0,0,0,0,2,0,0,0,2},
+  {4,0,0,0,0,0,0,0,0,0,0,0,6,2,0,0,5,0,0,2,0,0,0,2},
+  {4,0,0,0,0,0,0,0,0,4,6,0,6,2,0,0,0,0,0,2,2,0,2,2},
+  {4,0,6,0,6,0,0,0,0,4,6,0,0,0,0,0,5,0,0,0,0,0,0,2},
+  {4,0,0,5,0,0,0,0,0,4,6,0,6,2,0,0,0,0,0,2,2,0,2,2},
+  {4,0,6,0,6,0,0,0,0,4,6,0,6,2,0,0,5,0,0,2,0,0,0,2},
+  {4,0,0,0,0,0,0,0,0,4,6,0,6,2,0,0,0,0,0,2,0,0,0,2},
+  {4,4,4,4,4,4,4,4,4,4,1,1,1,2,2,2,2,2,2,3,3,3,3,3}
 };
 
 typedef struct {
@@ -67,12 +72,45 @@ struct {
   SDL_Window* window;
   SDL_Renderer* renderer;
   SDL_Texture* texture;
+	DynArray textures[TEXTURE_COUNT];
   u32 pixels[SCREEN_WIDTH * SCREEN_HEIGHT];
 
   vec2 pos;
   vec2 dir;
   vec2 plane;
 } state;
+
+void setTextures() {
+	f32 height_map = (f32) 255 / TEXTURE_HEIGHT;
+	f32 width_map = (f32) 255 / TEXTURE_WIDTH;
+	// generate some textures
+  for(u32 row = 0; row < TEXTURE_HEIGHT; row++) {
+		for(u32 col = 0; col < TEXTURE_WIDTH; col++) {
+			u32 xy_color = row * height_map / 2 + col * width_map / 2;
+			
+			u32* color = GET_PTR(state.textures[0], u32, TEXTURE_WIDTH * row + col);
+			*color = 0xFF000000 + 0x00FF0000 * (row != col && row != TEXTURE_WIDTH - col); // red w/ black cross
+			color = GET_PTR(state.textures[1], u32, TEXTURE_WIDTH * row + col);
+			*color = 0xFF000000 + 0x00010000 * xy_color + 0x00000100 * xy_color + 0x00000001 * xy_color; // sloped greyscale
+			color = GET_PTR(state.textures[2], u32, TEXTURE_WIDTH * row + col);
+			*color = 0xFF000000 + 0x00010000 * xy_color + 0x00000100 * xy_color; // sloped yellow gradient
+			color = GET_PTR(state.textures[3], u32, TEXTURE_WIDTH * row + col);
+			*color = 0xFF000000 +
+							(0x00010101 * (u32) (row * height_map)) ^
+							(0x00010101 * (u32) (col * height_map)); // xor greyscale
+			color = GET_PTR(state.textures[4], u32, TEXTURE_WIDTH * row + col);
+			*color = 0xFF000000 + 
+							(0x00000100 * (u32) (row * height_map)) ^ 
+							(0x00000100 * (u32) (col * width_map)); // xor green
+			color = GET_PTR(state.textures[5], u32, TEXTURE_WIDTH * row + col);
+			*color = 0xFF000000 + 0x00FF0000 * (row % 16 && col % 16); // red bricks
+			color = GET_PTR(state.textures[6], u32, TEXTURE_WIDTH * row + col);
+			*color = 0xFF000000 + 0x00010000 * (u32) (row * height_map); // red gradient
+			color = GET_PTR(state.textures[7], u32, TEXTURE_WIDTH * row + col);
+			*color = 0xFF888888; // grayscale
+		}
+	}
+}
 
 u32 getWallColor(i32 x, i32 y, i8 side) {
 	u32 color = 0xFF000000;
@@ -170,11 +208,33 @@ void render() {
 		i32 highest = line_height / 2 + SCREEN_HEIGHT / 2;
 		if (highest >= SCREEN_HEIGHT) highest = SCREEN_HEIGHT - 1;
 		
-		// get wall color
-		u32 color = getWallColor(map_pos.x, map_pos.y, side);
+		// texture calculations
+		i32 texture_id = world_map[map_pos.x][map_pos.y] - 1;
 
-		for (i32 row = lowest; row < highest; row++) {
-			state.pixels[row * SCREEN_WIDTH + col] = color;
+		// calculate wall_x
+		f64 wall_x; // find exactly where wall was hit
+		if (side == 0) wall_x = state.pos.y + perp_wall_dist * ray_dir.y;
+		else					 wall_x = state.pos.x + perp_wall_dist * ray_dir.x;
+		wall_x -= floor(wall_x);
+
+		// x coord on texture
+		i32 texture_x = (i32) (wall_x * TEXTURE_WIDTH);
+		if (side == 0 && ray_dir.x > 0) texture_x = TEXTURE_WIDTH - texture_x - 1;
+		if (side == 1 && ray_dir.y < 0) texture_x = TEXTURE_WIDTH - texture_x - 1;
+
+		// how much to increase texture coord per pixel
+		f64 texture_step = 1.0 * TEXTURE_HEIGHT / line_height;
+		// starting texture coordinate
+		f64 texture_pos = (lowest - SCREEN_HEIGHT / 2 + line_height / 2) * texture_step; 
+		for (i32 y = lowest; y < highest; y++) {
+			// convert texture_pos to int coord & mask w/ TEXTURE_HEIGHT - 1 to prevent overflow
+			i32 texture_y = (i32) texture_pos & (TEXTURE_HEIGHT - 1);
+			texture_pos += texture_step;
+			u32 color = GET(state.textures[texture_id], u32, TEXTURE_HEIGHT * texture_y + texture_x);
+
+			// divide by 2
+			if (side == 1) color = (color >> 1) & 0x7F7F7F7F;
+			state.pixels[y * SCREEN_WIDTH + col] = color;
 		}
 	}
 }
@@ -277,7 +337,15 @@ int main(int argc, char** argv) {
 	state.dir.y		=  0;
 	state.plane.x =	 0;
 	state.plane.y = 0.66;
+	u32 val = 0;
+	for (u32 i = 0; i < TEXTURE_COUNT; i++) {
+		initializeDynArray(&state.textures[i], 
+										 	 (void*) &val, 
+										 	 sizeof(u32), 
+										 	 TEXTURE_WIDTH * TEXTURE_HEIGHT);
 
+	}
+	setTextures();
 
   SDL_Event event;
   int quit = 0;
