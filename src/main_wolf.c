@@ -340,5 +340,9 @@ int main(int argc, char** argv) {
   SDL_DestroyRenderer(state.renderer);
   SDL_DestroyWindow(state.window);
   SDL_Quit();
+
+	for (u32 i = 0; i < TEXTURE_COUNT; i++) {
+		FREE(state.textures[i]);
+	}
   return 0;
 }
